@@ -3,6 +3,7 @@ package org.usfirst.ftc.exampleteam.yourcodehere;
 //import android.hardware.Camera;
 //import android.hardware.Camera.Parameters;
 
+import com.firebase.client.Firebase;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorController;
 import com.qualcomm.robotcore.hardware.Servo;
@@ -66,6 +67,7 @@ public class OPModeMain2015 extends SynchronousOpMode {
         // check string names in code against the ones on the app
 
 
+
         // Initialize Motors
         motorDriveLeft = hardwareMap.dcMotor.get("motorDriveLeft");
         motorDriveRight = hardwareMap.dcMotor.get("motorDriveRight");
@@ -96,6 +98,10 @@ public class OPModeMain2015 extends SynchronousOpMode {
 
         // Reverse motorDriveRight
         motorDriveRight.setDirection(DcMotor.Direction.REVERSE);
+
+        //Initialize Firebase
+
+        Firebase firebaseRef = new Firebase("https://9523-2015.firebaseio.com/");
 
         // Wait for the game to start
         waitForStart();

@@ -44,8 +44,6 @@ import android.hardware.usb.UsbManager;
 import android.net.wifi.WifiManager;
 import android.os.Bundle;
 import android.os.IBinder;
-import android.net.wifi.p2p.WifiP2pDevice;
-import android.os.*;
 import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.Gravity;
@@ -58,6 +56,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.firebase.client.Firebase;
 import com.qualcomm.ftccommon.DbgLog;
 import com.qualcomm.ftccommon.FtcEventLoop;
 import com.qualcomm.ftccommon.FtcRobotControllerService;
@@ -68,9 +67,7 @@ import com.qualcomm.ftccommon.UpdateUI;
 import com.qualcomm.ftcrobotcontroller.opmodes.FtcOpModeRegister;
 import com.qualcomm.hardware.HardwareFactory;
 import com.qualcomm.robotcore.eventloop.EventLoopManager;
-import com.qualcomm.robotcore.exception.RobotCoreException;
 import com.qualcomm.robotcore.hardware.configuration.Utility;
-import com.qualcomm.robotcore.robocol.*;
 import com.qualcomm.robotcore.robot.Robot;
 import com.qualcomm.robotcore.robot.RobotState;
 import com.qualcomm.robotcore.util.Dimmer;
@@ -78,16 +75,16 @@ import com.qualcomm.robotcore.util.ImmersiveMode;
 import com.qualcomm.robotcore.util.RobotLog;
 import com.qualcomm.robotcore.wifi.WifiDirectAssistant;
 
-import static junit.framework.Assert.*;
+import org.swerverobotics.library.SynchronousOpMode;
+import org.swerverobotics.library.internal.MemberUtil;
+import org.swerverobotics.library.internal.RobotStateTransitionNotifier;
+import org.swerverobotics.library.internal.SwerveFtcEventLoop;
+
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.Serializable;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.regex.Pattern;
-
-import org.swerverobotics.library.*;
-import org.swerverobotics.library.internal.*;
 
 public class FtcRobotControllerActivity extends Activity {
 
@@ -182,6 +179,8 @@ public class FtcRobotControllerActivity extends Activity {
   @Override
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
+
+    Firebase.setAndroidContext(this);
 
     receivedUsbAttachmentNotifications = new ConcurrentLinkedQueue<UsbDevice>();
     eventLoop = null;

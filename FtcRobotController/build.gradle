@@ -25,6 +25,7 @@ repositories {
 
 dependencies {
     compile files('libs/android-support-v4.jar')
+    compile 'com.firebase:firebase-client-android:2.5.0+'
     compile (name:'RobotCore-release', ext:'aar')
     compile (name:'Hardware-release', ext:'aar')
     compile (name:'FtcCommon-release', ext:'aar')
