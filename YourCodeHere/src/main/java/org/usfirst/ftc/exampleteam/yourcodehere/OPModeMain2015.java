@@ -50,6 +50,8 @@ public class OPModeMain2015 extends SynchronousOpMode {
     Servo flapRight = null;
     Servo brushArmLeft = null;
     Servo brushArmRight = null;
+    Servo leftClimber = null;
+    Servo rightClimber = null;
 
     double armHookPosition = -1350;
     int armPosition;
@@ -82,11 +84,14 @@ public class OPModeMain2015 extends SynchronousOpMode {
         flapRight = hardwareMap.servo.get("flapRight");
         brushArmLeft = hardwareMap.servo.get("brushArmLeft");
         brushArmRight = hardwareMap.servo.get("brushArmRight");
+        leftClimber = hardwareMap.servo.get("leftClimber");
+        rightClimber = hardwareMap.servo.get("rightClimber");
 
         //Set Servo Positions
         brush.setPosition(0.5);
         flapRaised();
         brushArmRaised();
+        climbersin();
 
         // Set Motor Channel Modes
         motorDriveLeft.setMode(DcMotorController.RunMode.RUN_WITHOUT_ENCODERS);
@@ -116,7 +121,7 @@ public class OPModeMain2015 extends SynchronousOpMode {
                 }
 
                 //======================================================================================================================================================================
-                // Test Arcade Drive
+                // Arcade Drive
                 //get the values from the gamepads
                 //note: pushing the stick all the way up returns -1, so we need to reverse the y values
                 float xValue = gamepad1.right_stick_x;
@@ -237,7 +242,7 @@ public class OPModeMain2015 extends SynchronousOpMode {
                     brushRunState = BrushRunState.STOPPED;
                 }
 
-                if (gamepad2.x && brushRunState == BrushRunState.RUNNING) {
+                if (gamepad2.y && brushRunState == BrushRunState.RUNNING) {
                     if (brushDirection == BrushDirection.FORWARD) {
                         brush.setPosition(1);
                         brushDirection = BrushDirection.BACKWARD;
@@ -252,6 +257,16 @@ public class OPModeMain2015 extends SynchronousOpMode {
                 // Drop the debris
                 if (gamepad2.b) {
                     dropDebris();
+                }
+
+                //======================================================================================================================================================================
+                //Hit Climbers
+                if (gamepad1.left_bumper) {
+                    hitLeftClimber();
+                }
+
+                if (gamepad1.right_bumper) {
+                    hitRightClimber();
                 }
 
             }
@@ -298,10 +313,22 @@ public class OPModeMain2015 extends SynchronousOpMode {
         }
     }
 
-    private void hitclimbers() throws InterruptedException {
-        motorArmRotation.setPower(0.3);
-        Thread.sleep(500);
-        motorArmRotation.setPower(0);
+
+    private void climbersin() {
+        leftClimber.setPosition(0);
+        rightClimber.setPosition(1);
+    }
+
+    private void hitLeftClimber() throws InterruptedException {
+        leftClimber.setPosition(1);
+        Thread.sleep(1000);
+        leftClimber.setPosition(0);
+    }
+
+    private void hitRightClimber() throws InterruptedException {
+        rightClimber.setPosition(0);
+        Thread.sleep(1000);
+        rightClimber.setPosition(1);
     }
 
     /*private double armLinearPower(int armPosition) {
