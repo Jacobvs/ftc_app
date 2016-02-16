@@ -315,7 +315,7 @@ public class OPModeMain2015 extends SynchronousOpMode {
 
 
     private void climbersin() {
-        leftClimber.setPosition(0);
+        leftClimber.setPosition(0.0);
         rightClimber.setPosition(1);
     }
 
