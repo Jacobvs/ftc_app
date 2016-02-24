@@ -12,6 +12,12 @@ import com.qualcomm.robotcore.util.Range;
 import org.swerverobotics.library.SynchronousOpMode;
 import org.swerverobotics.library.interfaces.TeleOp;
 
+import org.athenian.ftc.ListenerAction;
+import org.athenian.ftc.RobotValues;
+import org.athenian.ftc.ValueListener;
+import org.athenian.ftc.ValueSource;
+import org.athenian.ftc.ValueWriter;
+
 import static com.qualcomm.robotcore.hardware.DcMotorController.RunMode.RESET_ENCODERS;
 import static com.qualcomm.robotcore.hardware.DcMotorController.RunMode.RUN_TO_POSITION;
 import static com.qualcomm.robotcore.hardware.DcMotorController.RunMode.RUN_USING_ENCODERS;
@@ -32,6 +38,8 @@ public class OPModeMain2015 extends SynchronousOpMode {
     enum ArmDirection {
         UP, DOWN
     }
+
+    RobotValues robotValues = null;
 
     BrushRunState brushRunState = BrushRunState.STOPPED;
     BrushDirection brushDirection = BrushDirection.FORWARD;
@@ -68,7 +76,7 @@ public class OPModeMain2015 extends SynchronousOpMode {
          */
         // check string names in code against the ones on the app
 
-
+        FirebaseInit();
 
         // Initialize Motors
         motorDriveLeft = hardwareMap.dcMotor.get("motorDriveLeft");
@@ -103,10 +111,6 @@ public class OPModeMain2015 extends SynchronousOpMode {
 
         // Reverse motorDriveRight
         motorDriveRight.setDirection(DcMotor.Direction.REVERSE);
-
-        //Initialize Firebase
-
-        Firebase firebaseRef = new Firebase("https://9523-2015.firebaseio.com/");
 
         // Wait for the game to start
         waitForStart();
@@ -335,6 +339,67 @@ public class OPModeMain2015 extends SynchronousOpMode {
         int val = (int) ((0.7 * (1200 - armPosition) / 1200) * 100);
         return val / 100.0;
     }*/
+
+
+    public void FirebaseInit() {
+        final Firebase fb = new Firebase("https://your-firebase-url.firebaseio.com/");
+
+        this.robotValues = new RobotValues(fb, 1.5);
+        this.robotValues
+                .add(new ValueWriter("motor.a",
+                        new ValueSource() {
+                            @Override
+                            public Object getValue() {
+                                return motor.getCurrentPosition();
+                            }}))
+                .add(new ValueWriter("servo.a",
+                        new ValueSource() {
+                            @Override
+                            public Object getValue() {
+                                return servo.getPosition();
+                            }
+                        }))
+                .add(new ValueWriter("sensor.distance.a",
+                        new ValueSource() {
+                            @Override
+                            public Object getValue() {
+                                return distance.getLightDetected();
+                            }}))
+                .add(new ValueListener("motor.a",
+                        new ListenerAction() {
+                            @Override
+                            public void onValueChanged(Object val) {
+                                if (val != null) {
+                                    if (val instanceof Integer) {
+                                        motor.setTargetPosition((Integer) val);
+                                        motor.setPower(0.5);
+                                    } else {
+                                        telemetry.addData("IntegerException", val + "is not an Integer");
+                                    }
+                                } else {
+                                    telemetry.addData("NullException", "The input is Null");
+                                }
+                            }
+                        }))
+                .add(new ValueListener("servo.a",
+                        new ListenerAction() {
+                            @Override
+                            public void onValueChanged(Object val) {
+                                if (val != null) {
+                                    if (val instanceof Double) {
+                                        servo.setPosition((Double) val);
+                                    } else {
+                                        telemetry.addData("DoubleException", val + "is not a Double");
+                                    }
+                                } else {
+                                    telemetry.addData("NullException", "The input is Null");
+                                }
+                            }
+                        }));
+
+        // Start
+        this.robotValues.start();
+    }
 }
 
 
