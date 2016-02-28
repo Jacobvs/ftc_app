@@ -1,6 +1,8 @@
 package org.usfirst.ftc.exampleteam.yourcodehere;
 
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.GyroSensor;
+import com.qualcomm.robotcore.hardware.OpticalDistanceSensor;
 import com.qualcomm.robotcore.hardware.Servo;
 
 import org.swerverobotics.library.SynchronousOpMode;
@@ -13,22 +15,37 @@ import static com.qualcomm.robotcore.hardware.DcMotorController.RunMode.RUN_USIN
 import static com.qualcomm.robotcore.hardware.DcMotorController.RunMode.RUN_WITHOUT_ENCODERS;
 
 
-@Autonomous(name = "RedAutoMode2015")
+@Autonomous(name = "BlueAutoMode2015")
 public class RedAutoMode2015 extends SynchronousOpMode {
     // Declare Motors
     DcMotor motorDriveLeft = null;
     DcMotor motorDriveRight = null;
     DcMotor motorBaseRotation = null;
     DcMotor motorWinch = null;
-    DcMotor motorArmLateral = null;
-    DcMotor motorArmRotation = null;
+    DcMotor motorBucketArmLateral = null;
+    DcMotor motorBucketArmRotation = null;
+    DcMotor motorLiftArmRotation = null;
+    DcMotor motorLiftArmLateral = null;
 
     // Declare Servos
     Servo flapLeft = null;
     Servo flapRight = null;
     Servo brushArmLeft = null;
     Servo brushArmRight = null;
+    Servo brush = null;
 
+
+    GyroSensor gyro;
+
+
+    OpticalDistanceSensor distanceWall;
+    OpticalDistanceSensor distanceLine;
+
+    enum LineDirection {
+        LEFT, RIGHT, NULL
+    }
+
+    LineDirection lineDirection = LineDirection.NULL;
 
     @Override
     public void main() throws InterruptedException {
@@ -43,63 +60,66 @@ public class RedAutoMode2015 extends SynchronousOpMode {
         motorDriveRight = hardwareMap.dcMotor.get("motorDriveRight");
         motorBaseRotation = hardwareMap.dcMotor.get("motorBaseRotation");
         motorWinch = hardwareMap.dcMotor.get("motorWinch");
-        motorArmLateral = hardwareMap.dcMotor.get("motorArmLateral");
-        motorArmRotation = hardwareMap.dcMotor.get("motorArmRotation");
+        motorBucketArmLateral = hardwareMap.dcMotor.get("motorBucketArmLateral");
+        motorBucketArmRotation = hardwareMap.dcMotor.get("motorBucketArmRotation");
+        motorLiftArmRotation = hardwareMap.dcMotor.get("motorHangArmRotation");
+        motorLiftArmLateral = hardwareMap.dcMotor.get("motorHangArmLateral");
 
-
-        //Initialize Servos
+        // Initialize Servos
         flapLeft = hardwareMap.servo.get("flapLeft");
         flapRight = hardwareMap.servo.get("flapRight");
         brushArmLeft = hardwareMap.servo.get("brushArmLeft");
         brushArmRight = hardwareMap.servo.get("brushArmRight");
+        brush = hardwareMap.servo.get("brush");
+        gyro = hardwareMap.gyroSensor.get("gyro");
 
-        //Set Servo Positions
+
+        // Set Servo Positions
         flapRaised();
         brushArmRaised();
+        brush.setPosition(0.5);
 
         // Set Motor Channel Modes
         motorDriveLeft.setMode(RUN_USING_ENCODERS);
         motorDriveRight.setMode(RUN_USING_ENCODERS);
         motorBaseRotation.setMode(RUN_USING_ENCODERS);
         motorWinch.setMode(RUN_WITHOUT_ENCODERS);
-        motorArmLateral.setMode(RUN_WITHOUT_ENCODERS);
-        motorArmRotation.setMode(RUN_USING_ENCODERS);
+        motorBucketArmLateral.setMode(RUN_WITHOUT_ENCODERS);
+        motorBucketArmRotation.setMode(RUN_USING_ENCODERS);
+        motorLiftArmRotation.setMode(RUN_USING_ENCODERS);
 
-        // Reverse motorDriveRight
-        motorDriveRight.setDirection(REVERSE);
+        // Reverse motorDriveRight so we don't go in circles
+        motorDriveLeft.setDirection(REVERSE);
 
+
+        // turn on LED of light sensor.
+        distanceWall.enableLed(true);
+        distanceLine.enableLed(true);
+
+
+        // calibrate the gyro.
+        gyro.calibrate();
+        while (gyro.isCalibrating()) {
+        }
 
         // Wait for the game to start
         waitForStart();
 
+        // Give the gyro time to calibrate
+
+
         // Go R.O.B.I.T. Go!!!
-        driveForwardDistance(1, 1220);
-
-
+        driveForwardDistance(2260);
+        turnToPosition(315);
+        driveForwardDistance(6000);
+        turnToPosition(270);
+        driveForwardDistance(600);
+        finalPosition(270);
+        dropClimbers();
+        distanceWall.enableLed(false);
+        distanceLine.enableLed(false);
     }
 
-    public void driveForwardDistance(double power, int distance) throws InterruptedException {
-        //Reset Encoders
-        motorDriveLeft.setMode(RESET_ENCODERS);
-        motorDriveRight.setMode(RESET_ENCODERS);
-
-        //Set Target Position
-        motorDriveLeft.setTargetPosition(distance);
-        motorDriveRight.setTargetPosition(distance);
-
-        // Set ti RUN_TO_POSITION mode
-        motorDriveLeft.setMode(RUN_TO_POSITION);
-        motorDriveRight.setMode(RUN_TO_POSITION);
-
-        // Set drive power
-        motorDriveLeft.setPower(power);
-        motorDriveRight.setPower(power);
-
-        while (motorDriveLeft.isBusy() && motorDriveRight.isBusy()) {
-
-        }
-        stopDriving();
-    }
 
     public void stopDriving() {
         motorDriveLeft.setPower(0);
@@ -107,118 +127,104 @@ public class RedAutoMode2015 extends SynchronousOpMode {
     }
 
 
-    public void turnLeftDistance(double power, int distance) throws InterruptedException {
+    public void driveForwardDistance(int distance) throws InterruptedException {
+        final int heading = gyro.getHeading();
         //Reset Encoders
         motorDriveLeft.setMode(RESET_ENCODERS);
         motorDriveRight.setMode(RESET_ENCODERS);
+        while (motorDriveLeft.getCurrentPosition() < distance && motorDriveRight.getCurrentPosition() < distance) {
+            int currentHeading = gyro.getHeading();
+            if (currentHeading > (heading + 5) % 360 && currentHeading < (heading + 180) % 360) {
+                motorDriveRight.setPower(0.5);
+                motorDriveLeft.setPower(-0.5);
+            } else if (currentHeading > (heading + 180) % 360 && currentHeading < (heading + 355) % 360) {
+                motorDriveLeft.setPower(0.5);
+                motorDriveRight.setPower(-0.5);
+            } else {
+                // do nothing
+            }
 
-        //Set Target Position
-        motorDriveLeft.setTargetPosition(-distance);
-        motorDriveRight.setTargetPosition(distance);
+            // Set drive power
+            motorDriveLeft.setPower(1);
+            motorDriveRight.setPower(1);
 
-        // Set ti RUN_TO_POSITION mode
-        motorDriveLeft.setMode(RUN_TO_POSITION);
-        motorDriveRight.setMode(RUN_TO_POSITION);
-
-        // Set drive power
-        motorDriveLeft.setPower(power);
-        motorDriveRight.setPower(power);
-
-        while (motorDriveLeft.isBusy() && motorDriveRight.isBusy()) {
 
         }
         stopDriving();
+        motorDriveLeft.setMode(RUN_USING_ENCODERS);
+        motorDriveRight.setMode(RUN_USING_ENCODERS);
+
     }
 
 
-    public void turnRightDistance(double power, int distance) throws InterruptedException {
-        //Reset Encoders
-        motorDriveLeft.setMode(RESET_ENCODERS);
-        motorDriveRight.setMode(RESET_ENCODERS);
+    public void turnToPosition(int targetHeading) throws InterruptedException {
+        int currentHeading = gyro.getHeading();
+        while (targetHeading > currentHeading) {
+            motorDriveLeft.setPower(-0.3);
+            motorDriveRight.setPower(0.3);
+        }
+    }
 
-        //Set Target Position
-        motorDriveLeft.setTargetPosition(distance);
-        motorDriveRight.setTargetPosition(-distance);
+    public void finalPosition(int lastTurn) throws InterruptedException {
+        if (distanceLine.getLightDetected() <= 0.5 && distanceLine.getLightDetected() >= 1.0) {
+            while (distanceWall.getLightDetected() <= 0.5) {
+                motorDriveRight.setPower(0.4);
+                motorDriveLeft.setPower(0.4);
+            }
+            motorDriveLeft.setPower(0);
+            motorDriveRight.setPower(0);
+        } else {
+            motorDriveRight.setPower(-0.3);
+            motorDriveRight.setPower(-0.3);
+            Thread.sleep(500);
+            motorDriveRight.setPower(0);
+            motorDriveLeft.setPower(0);
+            while (distanceWall.getLightDetected() <= 0.4) {
+                if (distanceLine.getLightDetected() <= 0.4) {
+                    motorDriveRight.setPower(0.3);
+                    motorDriveLeft.setPower(0);
+                    lineDirection = LineDirection.LEFT;
+                } else {
+                    motorDriveLeft.setPower(0.3);
+                    motorDriveRight.setPower(0);
+                    lineDirection = LineDirection.RIGHT;
 
-        // Set ti RUN_TO_POSITION mode
-        motorDriveLeft.setMode(RUN_TO_POSITION);
-        motorDriveRight.setMode(RUN_TO_POSITION);
-
-        // Set drive power
-        motorDriveLeft.setPower(power);
-        motorDriveRight.setPower(power);
-
-        while (motorDriveLeft.isBusy() && motorDriveRight.isBusy()) {
+                }
+            }
+            if (lineDirection == LineDirection.LEFT) {
+                while (gyro.getHeading() < lastTurn) {
+                    motorDriveLeft.setPower(0.3);
+                    motorDriveRight.setPower(-0.3);
+                }
+            } else if (lineDirection == LineDirection.RIGHT) {
+                while (gyro.getHeading() > lastTurn) {
+                    motorDriveLeft.setPower(-0.3);
+                    motorDriveRight.setPower(0.3);
+                }
+            }
 
         }
-        stopDriving();
     }
 
-    public void driveBackwardsDistance(double power, int distance) throws InterruptedException {
-        //Reset Encoders
-        motorDriveLeft.setMode(RESET_ENCODERS);
-        motorDriveRight.setMode(RESET_ENCODERS);
 
-        //Set Target Position
-        motorDriveLeft.setTargetPosition(-distance);
-        motorDriveRight.setTargetPosition(-distance);
-
-        // Set ti RUN_TO_POSITION mode
-        motorDriveLeft.setMode(RUN_TO_POSITION);
-        motorDriveRight.setMode(RUN_TO_POSITION);
-
-        // Set drive power
-        motorDriveLeft.setPower(power);
-        motorDriveRight.setPower(power);
-
-        while (motorDriveLeft.isBusy() && motorDriveRight.isBusy()) {
-
-        }
-        stopDriving();
+    public void dropClimbers() {
+        motorLiftArmLateral.setMode(RESET_ENCODERS);
+        motorLiftArmLateral.setMode(RUN_TO_POSITION);
+        motorLiftArmLateral.setTargetPosition(700);
     }
 
-    public void dumpDebris() throws InterruptedException {
-        motorArmRotation.setPower(1);
-        wait(400);
-        motorArmLateral.setPower(1);
-        wait(300);
-        brushArmRaised();
-        flapLoweredTime();
-        wait(1000);
-        flapRaised();
-        wait(100);
-        motorArmLateral.setPower(-1);
-        wait(300);
-        motorArmRotation.setPower(-1);
-        wait(400);
+    private void flapRaised() {
+        flapLeft.setPosition(0.13);
+        flapRight.setPosition(0.89);
     }
 
-    public void turnBase180() throws InterruptedException {
-        motorBaseRotation.setPower(1);
-        wait(1500);
-    }
-
-    public void flapRaised() {
-        flapLeft.setPosition(0);
-        flapRight.setPosition(1);
-    }
-
-    public void flapLowered() {
-        flapLeft.setPosition(0.5);
-        flapRight.setPosition(0.5);
-    }
 
     private void brushArmRaised() {
         brushArmLeft.setPosition(1);
         brushArmRight.setPosition(0);
     }
 
-    private void flapLoweredTime() throws InterruptedException {
-        while (flapLeft.getPosition() < 0.72) {
-            flapLeft.setPosition(flapLeft.getPosition() + 0.03);
-            flapRight.setPosition(flapRight.getPosition() - 0.03);
-            Thread.sleep(100);
-        }
-    }
+
 }
+
 

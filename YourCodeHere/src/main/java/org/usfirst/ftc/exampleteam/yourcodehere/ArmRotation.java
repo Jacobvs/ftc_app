@@ -33,7 +33,7 @@ public class ArmRotation extends SynchronousOpMode {
         // check string names in code against the ones on the app
 
         // Initialize Motors
-        motorArmRotation = hardwareMap.dcMotor.get("motorArmRotation");
+        motorArmRotation = hardwareMap.dcMotor.get("motorBucketArmRotation");
 
         // Set Motor Channel Modes
         motorArmRotation.setMode(RESET_ENCODERS);
@@ -51,25 +51,25 @@ public class ArmRotation extends SynchronousOpMode {
                 //note: pushing the stick all the way up returns -1, so we need to reverse the y values
             /*if(System.currentTimeMillis()-lastUpdate > 5) {
                 if (gamepad1.right_stick_y == 0.00) {
-                    motorArmRotation.setMode(RESET_ENCODERS);
-                    motorArmRotation.setTargetPosition(motorArmRotation.getCurrentPosition());
-                    motorArmRotation.setMode(RUN_TO_POSITION);
-                    motorArmRotation.setPower(1);
+                    motorBucketArmRotation.setMode(RESET_ENCODERS);
+                    motorBucketArmRotation.setTargetPosition(motorBucketArmRotation.getCurrentPosition());
+                    motorBucketArmRotation.setMode(RUN_TO_POSITION);
+                    motorBucketArmRotation.setPower(1);
                 }
                 if (gamepad1.right_stick_y != 0.00) {
-                    motorArmRotation.setMode(RESET_ENCODERS);
-                    motorArmRotation.setMode(RUN_USING_ENCODERS);
-                    motorArmRotation.setPower(gamepad1.right_stick_y);
+                    motorBucketArmRotation.setMode(RESET_ENCODERS);
+                    motorBucketArmRotation.setMode(RUN_USING_ENCODERS);
+                    motorBucketArmRotation.setPower(gamepad1.right_stick_y);
                 }
                 lastUpdate = System.currentTimeMillis();
             }*/
                 /*if (gamepad1.right_stick_y != 0.0) {
-                    motorArmRotation.setMode(RUN_USING_ENCODERS);
-                    motorArmRotation.setPower(Range.clip(gamepad1.right_stick_y, -0.7, 0.7));}
-                else if(motorArmRotation.getMode() != RUN_TO_POSITION) {
-                    motorArmRotation.setTargetPosition(motorArmRotation.getCurrentPosition());
-                    motorArmRotation.setMode(RUN_TO_POSITION);
-                    motorArmRotation.setPower(1.0);
+                    motorBucketArmRotation.setMode(RUN_USING_ENCODERS);
+                    motorBucketArmRotation.setPower(Range.clip(gamepad1.right_stick_y, -0.7, 0.7));}
+                else if(motorBucketArmRotation.getMode() != RUN_TO_POSITION) {
+                    motorBucketArmRotation.setTargetPosition(motorBucketArmRotation.getCurrentPosition());
+                    motorBucketArmRotation.setMode(RUN_TO_POSITION);
+                    motorBucketArmRotation.setPower(1.0);
                 }*/
 
                 if (gamepad2.a) {
@@ -85,15 +85,15 @@ public class ArmRotation extends SynchronousOpMode {
                 }
 
                 /*if(gamepad1.a){
-                    motorArmRotation.setMode(DcMotorController.RunMode.RESET_ENCODERS);
-                    motorArmRotation.setTargetPosition(1440);
-                    motorArmRotation.setMode(DcMotorController.RunMode.RUN_TO_POSITION);
-                    motorArmRotation.setPower(0.1);
-                    while (motorArmRotation.isBusy()) {
+                    motorBucketArmRotation.setMode(DcMotorController.RunMode.RESET_ENCODERS);
+                    motorBucketArmRotation.setTargetPosition(1440);
+                    motorBucketArmRotation.setMode(DcMotorController.RunMode.RUN_TO_POSITION);
+                    motorBucketArmRotation.setPower(0.1);
+                    while (motorBucketArmRotation.isBusy()) {
 
                     }
-                    motorArmRotation.setPower(0);
-                    motorArmRotation.setMode(DcMotorController.RunMode.RUN_USING_ENCODERS);
+                    motorBucketArmRotation.setPower(0);
+                    motorBucketArmRotation.setMode(DcMotorController.RunMode.RUN_USING_ENCODERS);
                 */
                 telemetry.update();
                 idle();
@@ -101,7 +101,7 @@ public class ArmRotation extends SynchronousOpMode {
             telemetry.addData("outofif", "outofif");
             telemetry.update();
 
-            //motorArmRotation.setPower(gamepad2.left_stick_y);
+            //motorBucketArmRotation.setPower(gamepad2.left_stick_y);
 
         }
     }
